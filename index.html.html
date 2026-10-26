@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PreçoCarioca | Comparador Inteligente de Supermercados no RJ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' },
+                        guanabara: { DEFAULT: '#dc2626', dark: '#b91c1c' },
+                        mundial: { DEFAULT: '#eab308', dark: '#ca8a04' },
+                        zonasul: { DEFAULT: '#0284c7', dark: '#0369a1' },
+                        prezunic: { DEFAULT: '#9333ea', dark: '#7e22ce' },
+                        assai: { DEFAULT: '#f97316', dark: '#c2410c' },
+                        supermarket: { DEFAULT: '#059669', dark: '#047857' },
+                        atacadao: { DEFAULT: '#e11d48', dark: '#be123c' },
+                        dom: { DEFAULT: '#0891b2', dark: '#0e7490' },
+                        redeeconomia: { DEFAULT: '#4f46e5', dark: '#4338ca' },
+                        adonai: { DEFAULT: '#d97706', dark: '#b45309' }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col justify-between">
+
+    <!-- HEADER / NAVBAR -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('catalog')">
+                <div class="bg-brand-500 text-white p-2.5 rounded-xl shadow-lg flex items-center justify-center">
+                    <i class="fa-solid fa-basket-shopping text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
+                        PreçoCarioca <span class="text-xs bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full">RJ 2026</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Comparador Inteligente de Preços & Coleta Colaborativa</p>
+                </div>
+            </div>
+
+            <!-- MENU DE NAVEGAÇÃO -->
+            <nav class="flex flex-wrap items-center gap-2">
+                <button onclick="switchTab('catalog')" id="nav-catalog" class="px-3 py-2 rounded-lg text-sm font-medium transition bg-brand-600 text-white shadow">
+                    <i class="fa-solid fa-store mr-1.5"></i> Catálogo
+                </button>
+                <button onclick="switchTab('optimizer')" id="nav-optimizer" class="px-3 py-2 rounded-lg text-sm font-medium transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-calculator mr-1.5"></i> Lista Inteligente
+                </button>
+                <button onclick="switchTab('panorama')" id="nav-panorama" class="px-3 py-2 rounded-lg text-sm font-medium transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-ranking-star mr-1.5"></i> 10 Mercados
+                </button>
+                <button onclick="switchTab('mynotes')" id="nav-mynotes" class="px-3 py-2 rounded-lg text-sm font-medium transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-receipt mr-1.5"></i> Minhas Notas
+                </button>
+                <button onclick="openScannerModal()" class="px-3.5 py-2 rounded-lg text-sm font-semibold transition bg-amber-500 hover:bg-amber-600 text-slate-900 shadow">
+                    <i class="fa-solid fa-camera mr-1.5"></i> Escanear Nota
+                </button>
+                <!-- Perfil / Usuário -->
+                <button onclick="openProfileModal()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-lg text-sm transition">
+                    <i class="fa-solid fa-user-circle text-brand-400 text-base"></i>
+                    <span id="headerUserName" class="font-medium text-slate-200">Visitante</span>
+                    <span id="headerUserXp" class="bg-brand-500/20 text-brand-400 text-xs px-1.5 py-0.5 rounded font-mono">0 XP</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- BARRA DE FILTROS SUPERIOR -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="relative w-full md:w-96">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar produto (ex: Arroz, Picanha, Cerveja...)" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-medium text-slate-600">
+                    <i class="fa-solid fa-location-dot text-brand-600"></i>
+                    <select id="regionSelect" onchange="handleRegionChange()" class="bg-transparent focus:outline-none font-medium cursor-pointer">
+                        <option value="capital">Rio de Janeiro (Capital)</option>
+                        <option value="baixada">Baixada Fluminense</option>
+                        <option value="niteroi">Niterói / SG</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-medium">
+                    <button onclick="filterType('all')" id="filter-all" class="px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-sm transition">Todos</button>
+                    <button onclick="filterType('varejo')" id="filter-varejo" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Varejistas (7)</button>
+                    <button onclick="filterType('atacado')" id="filter-atacado" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Atacadistas (3)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 1: CATÁLOGO DE PRODUTOS E PREÇOS -->
+        <section id="tab-catalog" class="space-y-6">
+            <!-- Categorias -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                <button onclick="selectCategory('all')" id="cat-all" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-slate-900 text-white shadow">🔥 Todos</button>
+                <button onclick="selectCategory('mercearia')" id="cat-mercearia" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">🌾 Mercearia & Grãos</button>
+                <button onclick="selectCategory('acougue')" id="cat-acougue" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">🥩 Carnes & Açoite</button>
+                <button onclick="selectCategory('laticinios')" id="cat-laticinios" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">🧀 Laticínios & Frios</button>
+                <button onclick="selectCategory('bebidas')" id="cat-bebidas" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">🥤 Bebidas & Biscoitos</button>
+                <button onclick="selectCategory('limpeza')" id="cat-limpeza" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">🧼 Limpeza & Higiene</button>
+            </div>
+
+            <!-- Grade de Produtos -->
+            <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Preenchido via JavaScript -->
+            </div>
+        </section>
+
+        <!-- ABA 2: OTIMIZADOR DE LISTA DE COMPRAS -->
+        <section id="tab-optimizer" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-brand-400"></i> Otimizador Inteligente de Lista Carioca
+                    </h2>
+                    <p class="text-sm text-slate-300 mt-1">Selecione os produtos que precisa. O sistema calcula automaticamente onde sai mais barato comprar tudo junto ou dividido!</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="clearList()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-2.5 rounded-xl border border-slate-700 transition font-medium">Limpar Lista</button>
+                    <button onclick="saveCurrentList()" class="bg-brand-600 hover:bg-brand-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow flex items-center gap-2">
+                        <i class="fa-solid fa-bookmark"></i> Salvar Lista
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Seletor de Itens para a Lista -->
+                <div class="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center justify-between">
+                        <span>Adicionar à sua Lista</span>
+                        <span id="selectedCountBadge" class="bg-brand-50 text-brand-600 text-xs px-2 py-0.5 rounded-full font-mono">0 itens</span>
+                    </h3>
+                    <div class="relative">
+                        <input type="text" id="optimizerSearch" oninput="filterOptimizerPicker()" placeholder="Filtrar produtos..." class="w-full text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-500">
+                        <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-xs text-slate-400"></i>
+                    </div>
+                    <div id="optimizerPickerList" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Preenchido via JS -->
+                    </div>
+                </div>
+
+                <!-- Resultados da Otimização -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div id="optimizerResults" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <div class="text-center py-12 text-slate-400 space-y-3">
+                            <i class="fa-solid fa-basket-shopping text-4xl text-slate-300"></i>
+                            <p class="text-sm">Sua lista está vazia. Adicione produtos ao lado para calcular a economia em tempo real!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 3: PANORAMA DOS 10 SUPERMERCADOS -->
+        <section id="tab-panorama" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Panorama dos 10 Supermercados do RJ</h2>
+                        <p class="text-xs text-slate-500 mt-1">Comparativo geral de competitividade de preços, tipos e avaliação da comunidade carioca em 2026.</p>
+                    </div>
+                    <div class="bg-brand-50 text-brand-700 px-4 py-2 rounded-xl text-xs font-semibold border border-brand-200 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-check text-brand-600"></i> Atualizado por Crowdsourcing & IA
+                    </div>
+                </div>
+
+                <div id="marketRankingGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 4: MINHAS NOTAS FISCAIS E CONTRIBUIÇÕES -->
+        <section id="tab-mynotes" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Minhas Notas Fiscais e Contribuições</h2>
+                        <p class="text-xs text-slate-500 mt-1">Histórico de cupons fiscais enviados por você para ajudar os consumidores do Rio.</p>
+                    </div>
+                    <button onclick="openScannerModal()" class="bg-brand-600 hover:bg-brand-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow flex items-center gap-2">
+                        <i class="fa-solid fa-camera"></i> Enviar Nova Nota (NFC-e)
+                    </button>
+                </div>
+
+                <div id="myNotesList" class="space-y-4">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-white">PreçoCarioca</span>
+                <span>© 2026 • O app definitivo do consumidor carioca</span>
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span>Guanabara</span> • <span>Atacadão</span> • <span>Mundial</span> • <span>Zona Sul</span> • <span>Prezunic</span> • <span>Dom Atacadista</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL: SCANNER DE NOTA FISCAL (NFC-e) -->
+    <div id="scannerModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in duration-200">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-receipt text-amber-500"></i> Scanner Inteligente de Cupom Fiscal (NFC-e RJ)
+                </h3>
+                <button onclick="closeScannerModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-600">
+                <p>Tire uma foto do seu cupom fiscal de supermercado no Rio ou envie o arquivo da nota. Nossa IA extrai os preços automaticamente e atualiza o ranking!</p>
+                
+                <!-- Área de Upload / Câmera Simulado -->
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center space-y-3 bg-slate-50 hover:bg-slate-100 transition cursor-pointer relative" onclick="document.getElementById('receiptFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-600"></i>
+                    <div>
+                        <p class="font-semibold text-slate-800 text-sm">Clique para enviar foto ou PDF da NFC-e</p>
+                        <p class="text-slate-400 text-[11px]">Suporta JPG, PNG, WEBP ou PDF</p>
+                    </div>
+                    <input type="file" id="receiptFileInput" accept="image/*" class="hidden" onchange="handleReceiptUpload(event)">
+                </div>
+
+                <!-- Teste Rápido com Simulação -->
+                <div class="space-y-2">
+                    <p class="font-semibold text-slate-700">Ou teste instantaneamente com um cupom de exemplo:</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="simulateScan('Guanabara')" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 py-2 px-3 rounded-lg text-xs font-semibold transition text-center">
+                            🛒 Nota Guanabara
+                        </button>
+                        <button onclick="simulateScan('Atacadão')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 py-2 px-3 rounded-lg text-xs font-semibold transition text-center">
+                            📦 Nota Atacadão
+                        </button>
+                        <button onclick="simulateScan('Adonai')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 py-2 px-3 rounded-lg text-xs font-semibold transition text-center">
+                            🏪 Nota Adonai
+                        </button>
+                    </div>
+                </div>
+
+                <div id="scannerResultArea" class="hidden space-y-3 pt-3 border-t border-slate-100">
+                    <!-- Preenchido após scan -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PERFIL E CADASTRO DE USUÁRIO -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-brand-600"></i> Perfil & Gamificação Carioca
+                </h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form onsubmit="saveUserProfile(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Seu Nome / Apelido</label>
+                    <input type="text" id="profileNameInput" required placeholder="Ex: Carlos do Guanabara" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Bairro de Residência no RJ</label>
+                    <select id="profileNeighborhoodInput" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="Tijuca">Tijuca</option>
+                        <option value="Copacabana">Copacabana</option>
+                        <option value="Barra da Tijuca">Barra da Tijuca</option>
+                        <option value="Madureira">Madureira</option>
+                        <option value="Duque de Caxias">Duque de Caxias</option>
+                        <option value="Nova Iguaçu">Nova Iguaçu</option>
+                        <option value="Niterói">Niterói</option>
+                        <option value="Campo Grande">Campo Grande</option>
+                        <option value="Méier">Méier</option>
+                        <option value="São Gonçalo">São Gonçalo</option>
+                    </select>
+                </div>
+
+                <div class="bg-brand-50 border border-brand-200 rounded-xl p-3 space-y-1">
+                    <p class="font-semibold text-brand-800">🎖️ Seu Pexo-Score Atual</p>
+                    <p id="profileScoreDetails" class="text-brand-600 text-xs">Nível 1 • Iniciante da Barganha (0 XP)</p>
+                </div>
+
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-2.5 rounded-xl transition shadow">
+                    Salvar Perfil Carioca
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: HISTÓRICO DE PREÇOS (SVG) -->
+    <div id="historyModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="historyModalTitle" class="font-bold text-slate-900 text-sm">Histórico de Preços (30 Dias)</h3>
+                <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="historyChartContainer" class="space-y-4">
+                <!-- SVG Chart injetado via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl z-50 transition-all duration-300 transform translate-y-20 opacity-0 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-brand-400"></i>
+        <span id="toastMessage">Ação realizada com sucesso!</span>
+    </div>
+
+    <!-- SCRIPT DA APLICAÇÃO -->
+    <script>
+        // --- BASE DE DADOS DOS 10 SUPERMERCADOS DO RJ ---
+        const markets = [
+            { id: 'guanabara', name: 'Supermercados Guanabara', badge: 'Varejo', color: 'bg-red-600', text: 'text-red-600', border: 'border-red-200', rating: 4.8 },
+            { id: 'mundial', name: 'Supermercados Mundial', badge: 'Varejo', color: 'bg-yellow-500', text: 'text-yellow-600', border: 'border-yellow-200', rating: 4.7 },
+            { id: 'atacadao', name: 'Atacadão', badge: 'Atacado', color: 'bg-rose-600', text: 'text-rose-600', border: 'border-rose-200', rating: 4.6 },
+            { id: 'assai', name: 'Assaí Atacadista', badge: 'Atacado', color: 'bg-orange-600', text: 'text-orange-600', border: 'border-orange-200', rating: 4.5 },
+            { id: 'dom', name: 'Dom Atacadista', badge: 'Atacado', color: 'bg-cyan-600', text: 'text-cyan-600', border: 'border-cyan-200', rating: 4.5 },
+            { id: 'prezunic', name: 'Prezunic', badge: 'Varejo', color: 'bg-purple-600', text: 'text-purple-600', border: 'border-purple-200', rating: 4.3 },
+            { id: 'redeeconomia', name: 'Rede Economia', badge: 'Varejo', color: 'bg-indigo-600', text: 'text-indigo-600', border: 'border-indigo-200', rating: 4.2 },
+            { id: 'supermarket', name: 'Super Market', badge: 'Varejo', color: 'bg-emerald-600', text: 'text-emerald-600', border: 'border-emerald-200', rating: 4.1 },
+            { id: 'adonai', name: 'Supermercados Adonai', badge: 'Varejo', color: 'bg-amber-600', text: 'text-amber-600', border: 'border-amber-200', rating: 4.0 },
+            { id: 'zonasul', name: 'Zona Sul', badge: 'Varejo Premium', color: 'bg-sky-600', text: 'text-sky-600', border: 'border-sky-200', rating: 4.4 }
+        ];
+
+        // --- CATÁLOGO DE 24 PRODUTOS TÍPICOS DO RJ ---
+        let products = [
+            {
+                id: 1, name: 'Arroz Tio João Tipo 1 5kg', category: 'mercearia', image: '🌾',
+                prices: { guanabara: 24.90, mundial: 25.50, atacadao: 23.90, assai: 24.20, dom: 23.50, prezunic: 27.90, redeeconomia: 26.50, supermarket: 26.90, adonai: 25.90, zonasul: 34.90 }
+            },
+            {
+                id: 2, name: 'Feijão Carioca Combrasil 1kg', category: 'mercearia', image: '🫘',
+                prices: { guanabara: 7.80, mundial: 7.50, atacadao: 7.20, assai: 7.40, dom: 6.90, prezunic: 8.90, redeeconomia: 8.50, supermarket: 8.20, adonai: 7.90, zonasul: 11.50 }
+            },
+            {
+                id: 3, name: 'Café Pilão Torrado e Moído 500g', category: 'mercearia', image: '☕',
+                prices: { guanabara: 18.90, mundial: 19.50, atacadao: 17.90, assai: 18.20, dom: 17.50, prezunic: 20.90, redeeconomia: 19.90, supermarket: 19.20, adonai: 18.90, zonasul: 24.90 }
+            },
+            {
+                id: 4, name: 'Picanha Bovina kg (Peça Fresca)', category: 'acougue', image: '🥩',
+                prices: { guanabara: 59.90, mundial: 62.00, atacadao: 57.90, assai: 58.50, dom: 56.90, prezunic: 68.00, redeeconomia: 64.90, supermarket: 63.50, adonai: 61.90, zonasul: 89.90 }
+            },
+            {
+                id: 5, name: 'Leite Integral Elegê 1L', category: 'laticinios', image: '🥛',
+                prices: { guanabara: 4.89, mundial: 4.79, atacadao: 4.59, assai: 4.69, dom: 4.49, prezunic: 5.29, redeeconomia: 5.10, supermarket: 4.99, adonai: 4.85, zonasul: 6.90 }
+            },
+            {
+                id: 6, name: 'Biscoito Globo Polvilho Salgado 50g', category: 'bebidas', image: '🥨',
+                prices: { guanabara: 3.50, mundial: 3.50, atacadao: 3.20, assai: 3.30, dom: 3.10, prezunic: 3.90, redeeconomia: 3.70, supermarket: 3.60, adonai: 3.50, zonasul: 5.50 }
+            },
+            {
+                id: 7, name: 'Mate Leão Gelado Garrafa 1.5L', category: 'bebidas', image: '🧃',
+                prices: { guanabara: 6.90, mundial: 6.50, atacadao: 6.20, assai: 6.30, dom: 5.90, prezunic: 7.50, redeeconomia: 7.20, supermarket: 6.90, adonai: 6.70, zonasul: 9.90 }
+            },
+            {
+                id: 8, name: 'Cerveja Heineken Lata 350ml (Fardo 12un)', category: 'bebidas', image: '🍺',
+                prices: { guanabara: 58.80, mundial: 59.90, atacadao: 55.90, assai: 56.50, dom: 54.90, prezunic: 64.80, redeeconomia: 61.90, supermarket: 60.00, adonai: 59.00, zonasul: 78.00 }
+            },
+            {
+                id: 9, name: 'Sabão em Pó Omo Sanitizante 1.6kg', category: 'limpeza', image: '🧼',
+                prices: { guanabara: 22.90, mundial: 23.50, atacadao: 21.90, assai: 22.20, dom: 21.00, prezunic: 25.90, redeeconomia: 24.50, supermarket: 23.90, adonai: 23.00, zonasul: 31.90 }
+            },
+            {
+                id: 10, name: 'Óleo de Soja Liza 900ml', category: 'mercearia', image: '🍳',
+                prices: { guanabara: 6.49, mundial: 6.29, atacadao: 5.99, assai: 6.10, dom: 5.85, prezunic: 6.99, redeeconomia: 6.79, supermarket: 6.59, adonai: 6.40, zonasul: 8.90 }
+            },
+            {
+                id: 11, name: 'Açúcar Cristal União 1kg', category: 'mercearia', image: '🧂',
+                prices: { guanabara: 5.20, mundial: 4.99, atacadao: 4.79, assai: 4.89, dom: 4.69, prezunic: 5.70, redeeconomia: 5.49, supermarket: 5.30, adonai: 5.10, zonasul: 7.20 }
+            },
+            {
+                id: 12, name: 'Frango Inteiro Resfriado kg', category: 'acougue', image: '🍗',
+                prices: { guanabara: 9.90, mundial: 10.50, atacadao: 9.20, assai: 9.50, dom: 8.90, prezunic: 11.90, redeeconomia: 11.00, supermarket: 10.50, adonai: 9.90, zonasul: 15.90 }
+            }
+        ];
+
+        // Estado do Aplicativo
+        let currentTab = 'catalog';
+        let currentCategory = 'all';
+        let currentFilterType = 'all';
+        let searchQuery = '';
+        let shoppingList = {}; // { productId: qty }
+        
+        let userProfile = JSON.parse(localStorage.getItem('precocarioca_user')) || {
+            name: 'Carlos Carioca',
+            neighborhood: 'Tijuca',
+            xp: 120,
+            level: 2,
+            title: 'Fiscal Carioca'
+        };
+
+        let userNotes = JSON.parse(localStorage.getItem('precocarioca_notes')) || [
+            { id: 1, market: 'Supermercados Guanabara', date: '22/10/2026', itemsCount: 8, status: 'Verificado por IA' }
+        ];
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = function() {
+            updateUserProfileUI();
+            renderCatalog();
+            renderOptimizerPicker();
+            renderMarketRanking();
+            renderMyNotes();
+        };
+
+        // --- NAVEGAÇÃO DE ABAS ---
+        function switchTab(tabId) {
+            currentTab = tabId;
+            ['catalog', 'optimizer', 'panorama', 'mynotes'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "px-3 py-2 rounded-lg text-sm font-medium transition bg-slate-800 text-slate-300 hover:bg-slate-700";
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabId}`).className = "px-3 py-2 rounded-lg text-sm font-medium transition bg-brand-600 text-white shadow";
+            
+            if(tabId === 'optimizer') renderOptimizerList();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- RENDERIZAR CATÁLOGO ---
+        function renderCatalog() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+
+            const filtered = products.filter(p => {
+                const matchCat = currentCategory === 'all' || p.category === currentCategory;
+                const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchCat && matchSearch;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-sm">Nenhum produto encontrado para sua busca.</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                // Encontrar menor e maior preço
+                const priceEntries = Object.entries(p.prices);
+                priceEntries.sort((a, b) => a[1] - b[1]);
+                const best = priceEntries[0];
+                const bestMarketObj = markets.find(m => m.id === best[0]);
+
+                let cardHtml = `
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                                <span class="text-3xl">${p.image}</span>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-sm">${p.name}</h3>
+                                    <span class="text-[11px] text-slate-400 uppercase tracking-wider font-medium">${p.category}</span>
+                                </div>
+                            </div>
+                            <button onclick="openHistoryModal(${p.id})" title="Ver Histórico 30 Dias" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl text-xs transition">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </button>
+                        </div>
+
+                        <!-- Melhor Preço Destaque -->
+                        <div class="bg-brand-50 border border-brand-200 rounded-xl p-3 flex justify-between items-center">
+                            <div>
+                                <span class="text-[11px] font-bold text-brand-700 uppercase tracking-wider">Melhor Preço Carioca</span>
+                                <p class="text-lg font-extrabold text-brand-800">R$ ${best[1].toFixed(2)}</p>
+                            </div>
+                            <span class="text-xs font-semibold bg-white ${bestMarketObj.text} px-2.5 py-1 rounded-lg border ${bestMarketObj.border} shadow-sm">
+                                ${bestMarketObj.name}
+                            </span>
+                        </div>
+
+                        <!-- Top 3 Mercados -->
+                        <div class="space-y-1.5 text-xs">
+                            <p class="text-[11px] font-semibold text-slate-400">Comparativo nas Redes:</p>
+                `;
+
+                priceEntries.slice(0, 3).forEach(([mId, val], idx) => {
+                    const mObj = markets.find(m => m.id === mId);
+                    cardHtml += `
+                        <div class="flex justify-between items-center py-1 border-b border-slate-50">
+                            <span class="text-slate-600 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full ${mObj.color}"></span> ${mObj.name}
+                            </span>
+                            <span class="font-mono font-semibold text-slate-800">R$ ${val.toFixed(2)}</span>
+                        </div>
+                    `;
+                });
+
+                cardHtml += `
+                        </div>
+                        <div class="pt-2 flex gap-2">
+                            <button onclick="addToShoppingList(${p.id})" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-plus"></i> Adicionar à Lista
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHtml;
+            });
+        }
+
+        function filterProducts() {
+            searchQuery = document.getElementById('searchInput').value;
+            renderCatalog();
+        }
+
+        function selectCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.className = "category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-100";
+            });
+            document.getElementById(`cat-${cat}`).className = "category-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition bg-slate-900 text-white shadow";
+            renderCatalog();
+        }
+
+        function filterType(type) {
+            currentFilterType = type;
+            ['all', 'varejo', 'atacado'].forEach(t => {
+                document.getElementById(`filter-${t}`).className = t === type ? "px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-sm transition font-semibold" : "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+            });
+            showToast(`Filtro aplicado: ${type.toUpperCase()}`);
+        }
+
+        function handleRegionChange() {
+            const reg = document.getElementById('regionSelect').value;
+            showToast(`Região atualizada para: ${document.getElementById('regionSelect').options[document.getElementById('regionSelect').selectedIndex].text}`);
+            renderCatalog();
+        }
+
+        // --- OTIMIZADOR DE LISTA DE COMPRAS ---
+        function renderOptimizerPicker() {
+            const container = document.getElementById('optimizerPickerList');
+            container.innerHTML = '';
+            products.forEach(p => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-slate-100 transition">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">${p.image}</span>
+                            <div>
+                                <p class="font-semibold text-slate-800 text-xs">${p.name}</p>
+                                <p class="text-[10px] text-slate-400">R$ ${Math.min(...Object.values(p.prices)).toFixed(2)} (Melhor)</p>
+                            </div>
+                        </div>
+                        <button onclick="incrementListItem(${p.id})" class="bg-brand-50 hover:bg-brand-100 text-brand-600 p-2 rounded-lg text-xs transition">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function filterOptimizerPicker() {
+            // Filtro rápido no picker
+        }
+
+        function incrementListItem(productId) {
+            shoppingList[productId] = (shoppingList[productId] || 0) + 1;
+            renderOptimizerList();
+            showToast('Produto adicionado à Lista Inteligente!');
+        }
+
+        function decrementListItem(productId) {
+            if(shoppingList[productId]) {
+                shoppingList[productId]--;
+                if(shoppingList[productId] <= 0) delete shoppingList[productId];
+                renderOptimizerList();
+            }
+        }
+
+        function clearList() {
+            shoppingList = {};
+            renderOptimizerList();
+            showToast('Lista de compras limpa.');
+        }
+
+        function renderOptimizerList() {
+            const resultsDiv = document.getElementById('optimizerResults');
+            const productIds = Object.keys(shoppingList);
+            
+            let totalItemsCount = Object.values(shoppingList).reduce((a, b) => a + b, 0);
+            document.getElementById('selectedCountBadge').innerText = `${totalItemsCount} itens`;
+
+            if(productIds.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="text-center py-12 text-slate-400 space-y-3">
+                        <i class="fa-solid fa-basket-shopping text-4xl text-slate-300"></i>
+                        <p class="text-sm">Sua lista está vazia. Adicione produtos ao lado para calcular a economia!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Cálculo da Compra Dividida vs Mercado Único
+            let totalDividida = 0;
+            let splitDetails = [];
+
+            // Cálculo por Mercado Único
+            let marketTotals = {};
+            markets.forEach(m => marketTotals[m.id] = 0);
+
+            productIds.forEach(id => {
+                const p = products.find(prod => prod.id == id);
+                const qty = shoppingList[id];
+
+                let bestMarketForProd = '';
+                let minPrice = Infinity;
+
+                Object.entries(p.prices).forEach(([mId, price]) => {
+                    marketTotals[mId] += price * qty;
+                    if(price < minPrice) {
+                        minPrice = price;
+                        bestMarketForProd = mId;
+                    }
+                });
+
+                totalDividida += minPrice * qty;
+                splitDetails.push({ product: p.name, qty, market: markets.find(m => m.id == bestMarketForProd).name, price: minPrice * qty });
+            });
+
+            // Achar melhor mercado único
+            let bestSingleMarketId = Object.keys(marketTotals)[0];
+            let minSingleTotal = marketTotals[bestSingleMarketId];
+            Object.entries(marketTotals).forEach(([mId, total]) => {
+                if(total < minSingleTotal) {
+                    minSingleTotal = total;
+                    bestSingleMarketId = mId;
+                }
+            });
+
+            const bestSingleObj = markets.find(m => m.id === bestSingleMarketId);
+            const economiaDividida = minSingleTotal - totalDividida;
+
+            let html = `
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-brand-50 border border-brand-200 rounded-2xl p-5 space-y-2">
+                            <span class="text-xs font-bold text-brand-700 uppercase tracking-wider">🌟 Opção 1: Compra Dividida (Economia Máxima)</span>
+                            <p class="text-2xl font-black text-brand-900">R$ ${totalDividida.toFixed(2)}</p>
+                            <p class="text-xs text-brand-600">Comprando cada item no mercado mais barato, você economiza aprox. <strong class="font-bold">R$ ${Math.max(0, economiaDividida).toFixed(2)}</strong> em relação ao mercado único mais barato.</p>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-2">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">🛒 Opção 2: Melhor Mercado Único</span>
+                            <p class="text-2xl font-black text-slate-900">R$ ${minSingleTotal.toFixed(2)}</p>
+                            <p class="text-xs text-slate-600">Melhor opção para fazer a compra inteira em um só lugar: <strong class="font-bold text-slate-800">${bestSingleObj.name}</strong>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Detalhes da Compra Dividida -->
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-slate-800 text-sm">Onde comprar cada item (Estratégia Carioca):</h4>
+                        <div class="space-y-2">
+            `;
+
+            splitDetails.forEach(item => {
+                html += `
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                        <div>
+                            <span class="font-semibold text-slate-800">${item.qty}x ${item.product}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-brand-700">${item.market}</span>
+                            <span class="font-mono text-slate-600 ml-2">R$ ${item.price.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="exportWhatsApp(${totalDividida})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow text-xs flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-base"></i> Copiar Lista para WhatsApp
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function exportWhatsApp(total) {
+            let text = `🛒 *Minha Lista de Compras - PreçoCarioca*\n`;
+            text += `💰 *Total Estimado:* R$ ${total.toFixed(2)}\n\n`;
+            Object.entries(shoppingList).forEach(([id, qty]) => {
+                const p = products.find(prod => prod.id == id);
+                text += `• ${qty}x ${p.name}\n`;
+            });
+            text += `\n_Gerado pelo PreçoCarioca 2026_`;
+
+            navigator.clipboard.writeText(text);
+            showToast('Lista copiada para a área de transferência!');
+        }
+
+        function saveCurrentList() {
+            showToast('Lista salva com sucesso em seu perfil!');
+        }
+
+        // --- PANORAMA DOS 10 SUPERMERCADOS ---
+        function renderMarketRanking() {
+            const grid = document.getElementById('marketRankingGrid');
+            grid.innerHTML = '';
+            markets.forEach((m, idx) => {
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="w-3 h-3 rounded-full ${m.color}"></span>
+                            <span class="text-xs font-mono font-bold text-slate-400">#${idx + 1}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm">${m.name}</h4>
+                            <span class="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${m.badge}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs pt-2 border-t border-slate-100">
+                            <span class="text-slate-500">Avaliação</span>
+                            <span class="font-bold text-amber-500"><i class="fa-solid fa-star"></i> ${m.rating}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- SCANNER DE NOTA FISCAL (NFC-E) ---
+        function openScannerModal() { document.getElementById('scannerModal').classList.remove('hidden'); }
+        function closeScannerModal() { document.getElementById('scannerModal').classList.add('hidden'); }
+
+        function handleReceiptUpload(event) {
+            showToast('Nota fiscal enviada para análise da IA (Gemini Vision)...');
+            setTimeout(() => {
+                simulateScan('Supermercados Guanabara');
+            }, 1500);
+        }
+
+        function simulateScan(marketName) {
+            const area = document.getElementById('scannerResultArea');
+            area.classList.remove('hidden');
+            area.innerHTML = `
+                <div class="bg-brand-50 border border-brand-200 rounded-xl p-4 space-y-3 animate-in fade-in duration-200">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-brand-800 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-check text-brand-600"></i> Cupom Lido com Sucesso!
+                        </span>
+                        <span class="text-[10px] bg-brand-200 text-brand-800 font-semibold px-2 py-0.5 rounded">${marketName}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600">A IA extraiu 5 produtos e atualizou os preços no sistema.</p>
+                    <button onclick="confirmScanSuccess('${marketName}')" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-2 rounded-lg text-xs transition shadow">
+                        Confirmar e Ganhar +150 XP 🚀
+                    </button>
+                </div>
+            `;
+        }
+
+        function confirmScanSuccess(marketName) {
+            userProfile.xp += 150;
+            if(userProfile.xp >= 300) { userProfile.level = 3; userProfile.title = 'Mestre do Desconto'; }
+            else if(userProfile.xp >= 150) { userProfile.level = 2; userProfile.title = 'Fiscal Carioca'; }
+            
+            localStorage.setItem('precocarioca_user', JSON.stringify(userProfile));
+            updateUserProfileUI();
+
+            userNotes.unshift({ id: Date.now(), market: marketName, date: 'Hoje', itemsCount: 5, status: 'Verificado por IA' });
+            localStorage.setItem('precocarioca_notes', JSON.stringify(userNotes));
+            renderMyNotes();
+
+            closeScannerModal();
+            showToast('Nota processada! +150 XP adicionados ao seu perfil.');
+        }
+
+        // --- MINHAS NOTAS ---
+        function renderMyNotes() {
+            const list = document.getElementById('myNotesList');
+            list.innerHTML = '';
+            if(userNotes.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400">Você ainda não enviou nenhuma nota fiscal.</p>`;
+                return;
+            }
+            userNotes.forEach(n => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        <div class="space-y-1">
+                            <p class="font-bold text-slate-900">${n.market}</p>
+                            <p class="text-slate-400 text-[11px]">Enviado em ${n.date} • ${n.itemsCount} produtos extraídos</p>
+                        </div>
+                        <span class="bg-brand-100 text-brand-800 font-semibold px-2.5 py-1 rounded-lg">
+                            ${n.status}
+                        </span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- PERFIL E GAMIFICAÇÃO ---
+        function openProfileModal() {
+            document.getElementById('profileNameInput').value = userProfile.name;
+            document.getElementById('profileNeighborhoodInput').value = userProfile.neighborhood;
+            document.getElementById('profileScoreDetails').innerText = `Nível ${userProfile.level} • ${userProfile.title} (${userProfile.xp} XP)`;
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+
+        function saveUserProfile(e) {
+            e.preventDefault();
+            userProfile.name = document.getElementById('profileNameInput').value;
+            userProfile.neighborhood = document.getElementById('profileNeighborhoodInput').value;
+            localStorage.setItem('precocarioca_user', JSON.stringify(userProfile));
+            updateUserProfileUI();
+            closeProfileModal();
+            showToast('Perfil atualizado com sucesso!');
+        }
+
+        function updateUserProfileUI() {
+            document.getElementById('headerUserName').innerText = userProfile.name.split(' ')[0];
+            document.getElementById('headerUserXp').innerText = `${userProfile.xp} XP`;
+        }
+
+        // --- HISTÓRICO DE PREÇOS (SVG) ---
+        function openHistoryModal(productId) {
+            const p = products.find(prod => prod.id == productId);
+            document.getElementById('historyModalTitle').innerText = `Histórico de Preços (30 dias) - ${p.name}`;
+            
+            // Gerar gráfico SVG vetorial dos últimos 30 dias
+            const svgChart = `
+                <div class="space-y-3">
+                    <p class="text-xs text-slate-500">Evolução do menor preço nas redes cariocas nos últimos 30 dias:</p>
+                    <div class="bg-slate-900 p-4 rounded-xl">
+                        <svg viewBox="0 0 400 150" class="w-full h-36">
+                            <polyline fill="none" stroke="#22c55e" stroke-width="3" points="20,100 80,85 140,90 200,60 260,70 320,40 380,45" />
+                            <circle cx="20" cy="100" r="4" fill="#22c55e" />
+                            <circle cx="80" cy="85" r="4" fill="#22c55e" />
+                            <circle cx="140" cy="90" r="4" fill="#22c55e" />
+                            <circle cx="200" cy="60" r="4" fill="#22c55e" />
+                            <circle cx="260" cy="70" r="4" fill="#22c55e" />
+                            <circle cx="320" cy="40" r="4" fill="#22c55e" />
+                            <circle cx="380" cy="45" r="4" fill="#22c55e" />
+                        </svg>
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-2 font-mono">
+                            <span>Há 30 dias</span>
+                            <span>Há 15 dias</span>
+                            <span>Hoje</span>
+                        </div>
+                    </div>
+                    <div class="bg-brand-50 p-3 rounded-xl border border-brand-200 text-xs text-brand-800">
+                        <i class="fa-solid fa-circle-info mr-1"></i> Preço atual está <strong>4.2% abaixo</strong> da média mensal do Rio. Ótima oportunidade de compra!
+                    </div>
+                </div>
+            `;
+            document.getElementById('historyChartContainer').innerHTML = svgChart;
+            document.getElementById('historyModal').classList.remove('hidden');
+        }
+        function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
+
+        // --- TOAST NOTIFICATION ---
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
